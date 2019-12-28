@@ -3,41 +3,43 @@ package main
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 )
 
-func home(w http.ResponseWriter, r *http.Request) {
+// change the signature of the home handler fo it is defined as a method
+// against *application
+func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
 	}
 
-	// initialize slice containing path to two files
 	files := []string{
 		"./ui/html/home.page.tmpl",
 		"./ui/html/base.layout.tmpl",
 		"./ui/html/footer.partial.tmpl",
 	}
 
-	// use Template.ParseFiles() to read template into a template set
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		log.Println(err.Error())
+		// write log messages to to app.errorlog
+		app.errorLog.Println(err.Error())
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
 
-	// use the template.Execute() method to write to http.Response
 	err = ts.Execute(w, nil)
 	if err != nil {
-		log.Println(err.Error())
+		// update code to use error logger
+		app.errorLog.Println(err.Error())
 		http.Error(w, "Internal Server Error", 500)
 	}
 }
 
-func showSnippet(w http.ResponseWriter, r *http.Request) {
+// change signature of showSnippet to be defined against
+// *application
+func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
 		http.NotFound(w, r)
@@ -47,7 +49,9 @@ func showSnippet(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Display a specific snippet with ID: %d...", id)
 }
 
-func createSnippet(w http.ResponseWriter, r *http.Request) {
+// change signature of createSnippet to be defined against
+// *application
+func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.Header().Set("Allow", http.MethodPost)
 		http.Error(w, "Method Not Allowed", 405)
