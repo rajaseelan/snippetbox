@@ -25,7 +25,7 @@ func main() {
 	// strip "/static" before it reaches the file server
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	log.Println("Starting server on :4000")
-	err := http.ListenAndServe(":4000", mux)
+	log.Printf("Starting server on %s\n", *addr)
+	err := http.ListenAndServe(*addr, mux)
 	log.Fatal(err)
 }
