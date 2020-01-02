@@ -1,10 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
+
+	"github.com/rajaseelan/snippetbox/pkg/models"
 )
 
 // change the signature of the home handler fo it is defined as a method
@@ -40,7 +43,20 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Display a specific snippet with ID: %d...", id)
+	// Use SNnippetModel's Get() method to retrieve data for a specific
+	// record based on it's ID
+	s, err := app.snippets.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	// Write the snippet data as a plain-text HTTP response body
+	fmt.Fprintf(w, "%v", s)
 }
 
 // change signature of createSnippet to be defined against
